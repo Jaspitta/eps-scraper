@@ -7,30 +7,31 @@ import (
 	"net/http"
 	"os"
 	"strings"
+	"sync"
 )
 
 func main() {
 	client := &http.Client{}
-	c := make(chan string)
+	c := make(chan string, len(os.Args)-1)
+	var wg sync.WaitGroup
+	go receive(client, c, &wg)
 
 	for _, arg := range os.Args[1:] {
-		go getNextEPS(arg, client, c)
-	}
-
-	for line := range c {
-		fmt.Printf(line)
+		c <- arg
 	}
 	close(c)
+	wg.Wait()
 }
 
-func printOnChannelReceive(c chan string) {
-	for line := range c {
-		fmt.Printf(line)
+func receive(client *http.Client, c chan string, wg *sync.WaitGroup) {
+	for symbol := range c {
+		go getNextEPS(symbol, client, wg)
 	}
 }
 
 // ingoring all the errors because I am cool like that!
-func getNextEPS(symbol string, client *http.Client, c chan string) {
+func getNextEPS(symbol string, client *http.Client, wg *sync.WaitGroup) {
+	wg.Add(1)
 	// preparing request
 	pathElems := []string{"https://www.earningswhispers.com/api/getstocksdata/", symbol}
 	path := strings.Join(pathElems, "")
@@ -58,5 +59,5 @@ func getNextEPS(symbol string, client *http.Client, c chan string) {
 
 	// printing needed value from map
 	mess := []string{symbol, "\t --> \t", m["nextEPSDate"].(string), "\n"}
-	c <- strings.Join(mess, "")
+	fmt.Printf(strings.Join(mess, ""))
 }
