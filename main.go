@@ -12,26 +12,33 @@ import (
 
 func main() {
 	client := &http.Client{}
-	c := make(chan string, len(os.Args)-1)
+	// c := make(chan string, len(os.Args)-1)
 	var wg sync.WaitGroup
-	go receive(client, c, &wg)
+	// go receive(client, c, &wg)
 
 	for _, arg := range os.Args[1:] {
-		c <- arg
+		wg.Add(1)
+		go func(symbol string, client *http.Client) {
+			defer wg.Done()
+			getNextEPS(symbol, client)
+		}(arg, client)
 	}
-	close(c)
+
 	wg.Wait()
 }
 
-func receive(client *http.Client, c chan string, wg *sync.WaitGroup) {
-	for symbol := range c {
-		go getNextEPS(symbol, client, wg)
-	}
-}
+// func receive(client *http.Client, c chan string, wg *sync.WaitGroup) {
+// 	for symbol := range c {
+// 		wg.Add(1)
+// 		go func() {
+// 			getNextEPS(symbol, client)
+// 			wg.Done()
+// 		}()
+// 	}
+// }
 
 // ingoring all the errors because I am cool like that!
-func getNextEPS(symbol string, client *http.Client, wg *sync.WaitGroup) {
-	wg.Add(1)
+func getNextEPS(symbol string, client *http.Client) {
 	// preparing request
 	pathElems := []string{"https://www.earningswhispers.com/api/getstocksdata/", symbol}
 	path := strings.Join(pathElems, "")
