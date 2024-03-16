@@ -12,10 +12,10 @@ import (
 
 func main() {
 	client := &http.Client{}
-	// c := make(chan string, len(os.Args)-1)
 	var wg sync.WaitGroup
-	// go receive(client, c, &wg)
 
+	// args should be the ticket symbols (case significant)
+	// for each symbol create a routine and send a request
 	for _, arg := range os.Args[1:] {
 		wg.Add(1)
 		go func(symbol string, client *http.Client) {
@@ -24,20 +24,10 @@ func main() {
 		}(arg, client)
 	}
 
+	// wait for all routines to be completed
 	wg.Wait()
 }
 
-// func receive(client *http.Client, c chan string, wg *sync.WaitGroup) {
-// 	for symbol := range c {
-// 		wg.Add(1)
-// 		go func() {
-// 			getNextEPS(symbol, client)
-// 			wg.Done()
-// 		}()
-// 	}
-// }
-
-// ingoring all the errors because I am cool like that!
 func getNextEPS(symbol string, client *http.Client) {
 	// preparing request
 	pathElems := []string{"https://www.earningswhispers.com/api/getstocksdata/", symbol}
