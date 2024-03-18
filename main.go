@@ -55,6 +55,7 @@ func getNextEPS(symbol string, client *http.Client) {
 	m := j.(map[string]interface{})
 
 	// printing needed value from map
-	mess := []string{symbol, "\t --> \t", m["nextEPSDate"].(string), "\n"}
+	// only up to char 10 to remove the timestamp
+	mess := []string{symbol, "\t --> \t", m["nextEPSDate"].(string)[0:10], "\n"}
 	fmt.Printf(strings.Join(mess, ""))
 }
