@@ -47,7 +47,10 @@ func getNextEPS(symbol string, client *http.Client) {
 	// reading body as bytes
 	body, _ := io.ReadAll(resp.Body)
 
-	// converting resp in GENERIC json
+	fmt.Printf(formatResp(body, symbol))
+}
+
+func formatResp(body []byte, symbol string) (result string) {
 	var j interface{}
 	json.Unmarshal(body, &j)
 
@@ -57,5 +60,6 @@ func getNextEPS(symbol string, client *http.Client) {
 	// printing needed value from map
 	// only up to char 10 to remove the timestamp
 	mess := []string{symbol, "\t --> \t", m["nextEPSDate"].(string)[0:10], "\n"}
-	fmt.Printf(strings.Join(mess, ""))
+	result = strings.Join(mess, "")
+	return
 }
