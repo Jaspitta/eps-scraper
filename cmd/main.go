@@ -61,15 +61,19 @@ func main() {
 	e := echo.New()
 	e.Use(middleware.Logger())
 
-	count := Count{Count: 0}
+	data := newData()
 	e.Renderer = newTemplate()
 
 	e.GET("/", func(c echo.Context) error {
-		return c.Render(200, "index", count)
+		return c.Render(200, "index", data)
 	})
 
 	e.POST("/contacts", func(c echo.Context) error {
-		return c.Render(200, "index", count)
+		name := c.FormValue("name")
+		email := c.FormValue("email")
+
+		data.Contacts = append(data.Contacts, newContact(name, email))
+		return c.Render(200, "display", data)
 	})
 
 	e.Logger.Fatal(e.Start(":42069"))
